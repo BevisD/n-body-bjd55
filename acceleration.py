@@ -1,9 +1,19 @@
-import numpy as np
+'''
+NAME
+    acceleration
+DESCRIPTION
+    a collection of functions that calculates the accelerations of each particle
+FUNCTIONS:
+    numpy_pairwise
+'''
 
+import numpy as np
 
 def numpy_pairwise(force):
     '''
-    Creates a function to calculate the accelerations of particles from their positions
+    Creates a function to calculate the accelerations of particles from their positions.
+    Compares each particle to each other so O(n2), however it is very optimized due to only
+    using numpy functions
 
     Arguments
     ---------

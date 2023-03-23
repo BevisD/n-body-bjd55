@@ -1,3 +1,14 @@
+'''
+NAME
+    forces
+DESCRIPTION
+    a collection of functions that represent different types of forces, and
+    their potentials
+FUNCTIONS
+    gravitational_force
+'''
+
+
 def gravitational_force(G, softening):
     '''
     Creates a force function that only requires the distance between two particles
@@ -15,5 +26,19 @@ def gravitational_force(G, softening):
             the force function that is only a function of distance
     '''
     def _gravitational_force(r):
-        return G / (r ** 2 + softening ** 2)
+        '''
+        Calculates the gravitational force for a given distance and softening
+
+        Arguments
+        ---------
+            r: np.ndarray
+                the distance between particles
+
+        Returns
+        -------
+            force: float
+                the gravitational force between each particle
+        '''
+        force = G / (r ** 2 + softening ** 2)
+        return force
     return _gravitational_force

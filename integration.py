@@ -1,3 +1,14 @@
+'''
+NAME
+    integration
+DESCRIPTION
+    a collection of functions that numerically integrate the positions
+    and velocities of the particles
+FUNCTIONS
+    euler
+'''
+
+
 def euler(s, v, dt, acc_func):
     '''
     Calculates the state after the next time-step using Euler integration
