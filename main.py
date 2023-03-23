@@ -1,6 +1,7 @@
 import numpy as np
 from universe import Universe
-from config import load_config, save_config
+from config import load_config
+from integration import runge_kutta_4
 
 np.random.seed(0)
 
@@ -17,6 +18,7 @@ def main():
 
     uni = Universe(N, G, SOFTENING, DT, s, v,
                    world_size=2, point_size=4)
+    uni.integrate = runge_kutta_4
 
     uni.animation()
     return

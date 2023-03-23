@@ -14,6 +14,7 @@ from integration import euler
 from acceleration import numpy_pairwise
 from forces import gravitational_force
 
+
 class Universe:
     '''
     A class to represent the universe of the simulation
