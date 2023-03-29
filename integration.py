@@ -76,5 +76,4 @@ def runge_kutta_4(s, v, dt, acc_func):
 
     s += (k1_x + 2 * k2_x + 2 * k3_x + k4_x) * dt / 6.0
     v += (k1_v + 2 * k2_v + 2 * k3_v + k4_v) * dt / 6.0
-
     return s, v

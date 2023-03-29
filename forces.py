@@ -7,9 +7,25 @@ DESCRIPTION
 FUNCTIONS
     gravitational_force
 '''
+import numpy as np
+from abc import ABCMeta, abstractmethod
 
 
-def gravitational_force(G, softening):
+class Force(metaclass=ABCMeta):
+    @abstractmethod
+    def calculate_force(self, *args):
+        pass
+
+    @abstractmethod
+    def calculate_potential(self, *args):
+        pass
+
+
+class Gravity(Force):
+    def __init__(self, G, softening):
+        self.G = G
+        self.SOFTENING = softening
+
     '''
     Creates a force function that only requires the distance between two particles
 
@@ -25,20 +41,28 @@ def gravitational_force(G, softening):
         _gravitational_force: function
             the force function that is only a function of distance
     '''
-    def _gravitational_force(r):
+    def calculate_force(self, r):
         '''
         Calculates the gravitational force for a given distance and softening
 
         Arguments
         ---------
-            r: np.ndarray
+            r: float
                 the distance between particles
+            m1: float
+                the mass of the current particle
+            m2: float
+                the mass of the other particle
 
         Returns
         -------
             force: float
                 the gravitational force between each particle
         '''
-        force = G / (r ** 2 + softening ** 2)
+        force = self.G / (r ** 2 + self.SOFTENING ** 2)
+
         return force
-    return _gravitational_force
+
+    def calculate_potential(self, r):
+        potential = np.sum(self.G * (np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING)
+        return potential

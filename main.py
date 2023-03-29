@@ -16,10 +16,9 @@ def main():
     SOFTENING = 0.01
     DT = 0.01
 
-    uni = Universe(N, G, SOFTENING, DT, s, v,
+    uni = Universe(N, G, SOFTENING, DT, s.copy(), v.copy(),
                    world_size=2, point_size=4)
     uni.integrate = runge_kutta_4
-
     uni.animation()
     return
 

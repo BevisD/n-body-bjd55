@@ -9,6 +9,7 @@ FUNCTIONS:
 
 import numpy as np
 
+
 def numpy_pairwise(force):
     '''
     Creates a function to calculate the accelerations of particles from their positions.
@@ -19,6 +20,7 @@ def numpy_pairwise(force):
     ---------
         force: function
             the function that calculates the force between two particles
+        m: the mass of the particles
 
     Returns
     -------
@@ -26,6 +28,7 @@ def numpy_pairwise(force):
             the function that calculates the accelerations of the particles from only
             their positions
     '''
+
     def _numpy_pairwise(s):
         '''
         Calculates the acceleration of each particle from their positons
@@ -46,6 +49,7 @@ def numpy_pairwise(force):
             r = np.roll(s, i, axis=0) - s
             d = np.linalg.norm(r, axis=1)[:, np.newaxis]
             r_norm = np.divide(r, d, where=(d != 0))
-            a += r_norm * force(r)
+            a += r_norm * force(d)
         return a
+
     return _numpy_pairwise
