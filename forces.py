@@ -1,17 +1,28 @@
-'''
+"""
 NAME
     forces
 DESCRIPTION
     a collection of functions that represent different types of forces, and
     their potentials
-FUNCTIONS
-    gravitational_force
-'''
+CLASSES
+    Force
+    Gravity
+"""
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
 
 class Force(metaclass=ABCMeta):
+    """
+    A class to store the force and potential functions for a specific force type
+
+    Methods
+    -------
+        calculate_force()
+            calculates the force between two particles
+        calculate_potential()
+            calculates the potential between two particles
+    """
     @abstractmethod
     def calculate_force(self, *args):
         pass
@@ -21,48 +32,59 @@ class Force(metaclass=ABCMeta):
         pass
 
 
-class Gravity(Force):
-    def __init__(self, G, softening):
-        self.G = G
+class InverseSquare(Force):
+    """
+        Holds the force and potential functions for an inverse square relationship
+
+        ATTRIBUTES
+        ----------
+        K: float
+            the constant of proportionality for the force e.g. G for gravitation
+        SOFTENING: float
+            the softening distance to prevent divergent forces
+    """
+    def __init__(self, K, softening):
+        self.K = K
         self.SOFTENING = softening
 
-    '''
-    Creates a force function that only requires the distance between two particles
-
-    Arguments
-    ---------
-        G: float
-            gravitational constant
-        softening: float
-            the factor that prevents the divergence of the force at small distances
-
-    Returns
-    -------
-        _gravitational_force: function
-            the force function that is only a function of distance
-    '''
-    def calculate_force(self, r):
-        '''
-        Calculates the gravitational force for a given distance and softening
+    def calculate_force(self, r, q1, q2):
+        """
+        Calculates the gravitational force between two particles
 
         Arguments
         ---------
             r: float
                 the distance between particles
-            m1: float
-                the mass of the current particle
-            m2: float
-                the mass of the other particle
+            q1: float
+                the charge of the current particle, a mass if gravitation
+            q2: float
+                the charge of the other particle, a mass if gravitation
 
         Returns
         -------
             force: float
-                the gravitational force between each particle
-        '''
-        force = self.G / (r ** 2 + self.SOFTENING ** 2)
-
+                the force between each particle
+        """
+        force = q1 * q2 * self.K / (r ** 2 + self.SOFTENING ** 2)
         return force
 
-    def calculate_potential(self, r):
-        potential = np.sum(self.G * (np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING)
+    def calculate_potential(self, r, q1, q2):
+        """
+            Calculates the potential between two particles
+
+            Arguments
+            ---------
+                r: float
+                    the distance between particles
+                q1: float
+                    the charge of the current particle, a mass if gravitation
+                q2: float
+                    the charge of the other particle, a mass if gravitation
+
+            Returns
+            -------
+                potential: float
+                    the potential between the particles
+        """
+        potential = q1 * q2 * self.K * (np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING
         return potential

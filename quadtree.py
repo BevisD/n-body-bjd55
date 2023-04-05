@@ -1,9 +1,14 @@
 import matplotlib.patches as patches
 
+
 class Point:
-    def __init__(self, p, m):
-        self.x, self.y = self.p
+    def __init__(self, p, q, m):
+        self.x, self.y = p
+        self.q = q
         self.m = m
+
+    def __repr__(self):
+        return f"Point(({self.x}, {self.y}), {self.q})"
 
 
 class Square:
@@ -11,7 +16,10 @@ class Square:
         self.x, self.y = x, y
         self.d = d
         self.r = d/2
-        self.com = None
+        self.centre_of_charge = None
+
+    def __repr__(self):
+        return f"Square(({self.x}, {self.y}), {self.d})"
 
     def contains(self, point: Point):
         return (self.x - self.r <= point.x < self.x + self.r) and \
@@ -34,6 +42,7 @@ class QuadTree:
         self.points = []
         self.divided = False
         self.max_d = max_depth
+        self.quadrants = None
 
     def clear(self):
         self.points = []
@@ -77,7 +86,7 @@ class QuadTree:
             patch = patches.Rectangle((self.boundary.x - self.boundary.r,
                                        self.boundary.y - self.boundary.r),
                                       self.boundary.d, self.boundary.d,
-                                      edgecolor="black", facecolor="none")
+                                      edgecolor="black", facecolor="none", linewidth=0.5)
             ax.add_patch(patch)
 
 
