@@ -13,6 +13,8 @@ import matplotlib.animation as animation
 from integration import euler
 from acceleration import numpy_pairwise
 from forces import InverseSquare
+from numpy.typing import NDArray
+from typing import Callable
 
 
 class Universe:
@@ -29,15 +31,15 @@ class Universe:
         the time-step increment of the universe
     T: float
         the time elapsed from the initial conditions
-    s: np.ndarray
+    s: NDArray
         the positions of particles in the universe
-    v: np.ndarray
+    v: NDArray
         the velocities of particles in the universe
-    a: np.ndarray
+    a: NDArray
         the accelerations of particles in the universe
-    m: np.ndarray
+    m: NDArray
         the masses of particles in the universe
-    q: np.ndarray
+    q: NDArray
         the charges of particles in the universe, equal to masses for gravitation
     SOFTENING: float
         the factor to reduce divergence of force between near particles
@@ -75,12 +77,12 @@ class Universe:
                  g: float,
                  softening: float,
                  dt: float,
-                 s: np.ndarray,
-                 v: np.ndarray,
-                 m: np.ndarray = None,
-                 q: np.ndarray = None,
+                 s: NDArray,
+                 v: NDArray,
+                 m: NDArray = None,
+                 q: NDArray = None,
                  world_size: float = 1.0,
-                 point_size: float = 1.0):
+                 point_size: float = 1.0) -> None:
 
         # Define universe constants
         self.N = n  # Number of particles in the universe
@@ -111,18 +113,14 @@ class Universe:
         self.pot_hist = []  # The array to store potential energies
         self.kin_hist = []  # The array to store kinetic energies
 
-    def create_figure(self):
+    def create_figure(self) -> tuple[plt.Figure, plt.Axes]:
         """
         Creates a matplotlib figure and axis for the particle positions
 
-        Arguments
-        ---------
-            self
-
         Returns
         -------
-            fig: matplotlib.figure.Figure
-            ax: matplotlib.axes._axes.Axes
+            fig: plt.Figure
+            ax: plt.Axes
         """
         fig, ax = plt.subplots(figsize=(6, 6))
         ax.set_xlim(-self.SIZE, self.SIZE)
@@ -130,13 +128,9 @@ class Universe:
         ax.set_aspect("equal")
         return fig, ax
 
-    def render(self):
+    def render(self) -> None:
         """
         Displays the current positions of all the particles
-
-        Arguments
-        ---------
-            self
 
         Returns
         -------
@@ -147,13 +141,9 @@ class Universe:
         ax.scatter(x, y, s=self.MARKER_SIZE)
         plt.show()
 
-    def calc_kinetic(self):
+    def calc_kinetic(self) -> float:
         """
         Calculates the total kinetic energy of the universe
-
-        Arguments
-        ---------
-            self
 
         Returns
         -------
@@ -163,14 +153,10 @@ class Universe:
         kinetic_energy = 0.5 * self.m @ (np.linalg.norm(self.v, axis=1) ** 2)
         return kinetic_energy
 
-    def calc_potential(self):
+    def calc_potential(self) -> float:
         """
         Calculates the total potential energy of the universe
         using a numpy pairwise algorithm
-
-        Arguments
-        ---------
-            self
 
         Returns
         -------
@@ -189,13 +175,9 @@ class Universe:
             potential -= 0.5 * np.sum(self.potential(d, self.q, q2))
         return potential
 
-    def record_energies(self):
+    def record_energies(self) -> None:
         """
         Keeps a record of the Kinetic and Potential energy
-
-        Arguments
-        ---------
-            self
 
         Returns
         -------
@@ -206,14 +188,13 @@ class Universe:
         self.kin_hist.append(kinetic)
         self.pot_hist.append(potential)
 
-    def plot_energies(self, filename=None):
+    def plot_energies(self, filename: str = None) -> None:
         """
         Plots the history of the energy of the universe at every point self.record_energies
         was called. The total energy of the universe should be constant
 
         Arguments
         ---------
-            self
             filename: str
                 the name of the file to save the figure to
 
@@ -241,14 +222,16 @@ class Universe:
         else:
             plt.show()
 
-    def update(self, record_energies=False):
+    def update(self, record_energies: bool = False) -> None:
         """
         Updates the positions and velocities of each particle for the next time-step
-        Optionally records the energy at each timestep
+        Optionally records the energy at each time-step
 
         Arguments
         ---------
-            self
+            record_energies: bool
+                option to calculate and store the potential and kinetic energies
+                slows down performance, so only use if needed
 
         Returns
         -------
@@ -259,7 +242,8 @@ class Universe:
         self.s, self.v = self.integrate(self.s, self.v, self.DT, self.calc_acceleration)
         self.T += self.DT
 
-    def animation(self, frames=100, iterations_per_frame=1, filename=None, **kwargs):
+    def animation(self, frames: int = 100, iterations_per_frame: int = 1,
+                  filename: str = None, **kwargs) -> None:
         """
         Displays an animation of the positions of the particles over time
 
@@ -288,14 +272,33 @@ class Universe:
         else:
             plt.show()
 
-    def _animate(self, ax, scatter, iterations_per_frame, **kwargs):
-        def animate(i):
+    def _animate(self, ax: plt.Axes, scatter: plt.scatter,
+                 iterations_per_frame: int, **kwargs) -> Callable[[int], None]:
+        """
+        Creates the animation function that has only the frame count as an argument
+
+        Arguments
+        ---------
+            ax: plt.Axes
+                the axes to draw the animation onto
+            scatter: plt.scatter
+                the scatter plot that displays the particle positions
+            iterations_per_frame: int
+                the number of times to call update before rendering the frame
+
+        Returns
+        -------
+            animate: function
+                the animation function that is called each frame
+
+        """
+        def animate(_: int) -> None:
             """
             Updates the position of the particles on the figure
 
             Arguments
             ---------
-                i: int
+                _: int
                     the frame count
 
             Returns

@@ -1,4 +1,4 @@
-'''
+"""
 NAME
     integration
 DESCRIPTION
@@ -7,18 +7,22 @@ DESCRIPTION
 FUNCTIONS
     euler
     runge_kutta_4
-'''
+"""
+
+from numpy.typing import NDArray
+from typing import Callable
 
 
-def euler(s, v, dt, acc_func):
-    '''
+def euler(s: NDArray, v: NDArray, dt: float, acc_func: Callable[[NDArray], NDArray])\
+        -> tuple[NDArray, NDArray]:
+    """
     Calculates the state after the next time-step using Euler integration
 
     Arguments
     ---------
-        s: np.ndarray
+        s: NDArray
             Positions of particles
-        v: np.ndarray
+        v: NDArray
             Velocities of particles
         dt: float
             The time-step increment amount
@@ -27,27 +31,28 @@ def euler(s, v, dt, acc_func):
 
     Returns
     -------
-        s: np.ndarray
+        s: NDArray
             The updated positions of the particles
-        v: np.ndarray
+        v: NDArray
             The updated velocities of the particles
 
-    '''
+    """
     a = acc_func(s)
     v += a * dt
     s += v * dt
     return s, v
 
 
-def runge_kutta_4(s, v, dt, acc_func):
-    '''
+def runge_kutta_4(s: NDArray, v: NDArray, dt: float, acc_func: Callable[[NDArray], NDArray])\
+        -> tuple[NDArray, NDArray]:
+    """
         Calculates the state after the next time-step using RK4 integration
 
         Arguments
         ---------
-            s: np.ndarray
+            s: NDArray
                 Positions of particles
-            v: np.ndarray
+            v: NDArray
                 Velocities of particles
             dt: float
                 The time-step increment amount
@@ -56,12 +61,11 @@ def runge_kutta_4(s, v, dt, acc_func):
 
         Returns
         -------
-            s: np.ndarray
+            s: NDArray
                 The updated positions of the particles
-            v: np.ndarray
+            v: NDArray
                 The updated velocities of the particles
-
-    '''
+    """
     k1_x = v
     k1_v = acc_func(s)
 

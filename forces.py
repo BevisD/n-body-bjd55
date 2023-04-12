@@ -6,10 +6,12 @@ DESCRIPTION
     their potentials
 CLASSES
     Force
-    Gravity
+    InverseSquare
 """
 import numpy as np
 from abc import ABCMeta, abstractmethod
+from numpy.typing import NDArray
+from typing import Union
 
 
 class Force(metaclass=ABCMeta):
@@ -43,47 +45,49 @@ class InverseSquare(Force):
         SOFTENING: float
             the softening distance to prevent divergent forces
     """
-    def __init__(self, K, softening):
+    def __init__(self, K: float, softening: float) -> None:
         self.K = K
         self.SOFTENING = softening
 
-    def calculate_force(self, r, q1, q2):
+    def calculate_force(self, r: Union[float,NDArray], q1: Union[float,NDArray],
+                        q2: Union[float,NDArray]) -> Union[float, NDArray]:
         """
         Calculates the gravitational force between two particles
 
         Arguments
         ---------
-            r: float
+            r: float | NDArray
                 the distance between particles
-            q1: float
+            q1: float | NDArray
                 the charge of the current particle, a mass if gravitation
-            q2: float
+            q2: float | NDArray
                 the charge of the other particle, a mass if gravitation
 
         Returns
         -------
-            force: float
+            force: float | NDArray
                 the force between each particle
         """
         force = q1 * q2 * self.K / (r ** 2 + self.SOFTENING ** 2)
         return force
 
-    def calculate_potential(self, r, q1, q2):
+    def calculate_potential(self, r: Union[float,NDArray], q1: Union[float,NDArray],
+                            q2: Union[float,NDArray]) -> Union[float,NDArray]:
         """
             Calculates the potential between two particles
 
             Arguments
             ---------
-                r: float
+                r: float | NDArray
                     the distance between particles
-                q1: float
+                q1: float | NDArray
                     the charge of the current particle, a mass if gravitation
-                q2: float
+                q2: float | NDArray
                     the charge of the other particle, a mass if gravitation
 
             Returns
             -------
-                potential: float
+                potential: float | NDArray
                     the potential between the particles
         """
         potential = q1 * q2 * self.K * (np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING
