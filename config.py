@@ -14,7 +14,9 @@ from numpy.typing import NDArray
 from typing import Dict
 from typing import Any
 
-def save_config(name: str, N: int, s: NDArray, v: NDArray, overwrite: bool = False) -> None:
+
+def save_config(name: str, N: int, s: NDArray, v: NDArray,
+                overwrite: bool = False) -> None:
     """
     Saves the initial positions and velocities of a universe to a .npz file
 

@@ -2,13 +2,17 @@
 NAME
     acceleration
 DESCRIPTION
-    a collection of functions that calculates the accelerations of each particle
+    a collection of functions that calculates the accelerations of each
+    particle
 FUNCTIONS:
     numpy_pairwise
 """
 
 import numpy as np
-from typing import Callable
+from typing import Callable, Any
+
+from numpy import ndarray, dtype
+from numpy._typing._generic_alias import ScalarType
 from numpy.typing import NDArray
 
 
@@ -18,9 +22,9 @@ def numpy_pairwise(force: Callable[[NDArray, NDArray, NDArray], NDArray],
     To implement RK4 and other algorithms easily, we want an acceleration
     function that only has position as a variable
 
-    Creates a function to calculate the accelerations of particles from their positions.
-    Compares each particle to each other so O(n2), however it is very optimized due to only
-    using numpy functions
+    Creates a function to calculate the accelerations of particles from
+    their positions. Compares each particle to each other so O(n2), however
+    it is very optimized due to only using numpy functions
 
     Arguments
     ---------
@@ -33,9 +37,9 @@ def numpy_pairwise(force: Callable[[NDArray, NDArray, NDArray], NDArray],
 
     Returns
     -------
-        _numpy_pairwise: function
-            the function that calculates the accelerations of the particles from only
-            their positions
+     _numpy_pairwise: function
+        the function that calculates the accelerations of the particles from
+        only their positions
     """
 
     def _numpy_pairwise(s: NDArray[float]) -> NDArray:
@@ -57,9 +61,11 @@ def numpy_pairwise(force: Callable[[NDArray, NDArray, NDArray], NDArray],
         for i in range(1, n):
             r = np.roll(s, i, axis=0) - s  # Vectors between pairs of particles
             q2 = np.roll(q, i)  # Charges of attracting particles
-            d = np.linalg.norm(r, axis=1)  # Distances between pairs of particles
+            d = np.linalg.norm(r,
+                               axis=1)  # Distances between pairs of particles
             # Direction between particles
-            r_norm = np.divide(r, d[:, np.newaxis], where=(d[:, np.newaxis] != 0))
+            r_norm = np.divide(r, d[:, np.newaxis],
+                               where=(d[:, np.newaxis] != 0))
             a += r_norm * (force(d, q, q2) / m)[:, np.newaxis]
         return a
 

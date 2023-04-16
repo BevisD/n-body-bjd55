@@ -39,7 +39,8 @@ class BarnesHutUniverse(Universe):
         m: NDArray
             the masses of particles in the universe
         q: NDArray
-            the charges of particles in the universe, equal to masses for gravitation
+            the charges of particles in the universe, equal to masses for
+            gravitation
         SOFTENING: float
             the factor to reduce divergence of force between near particles
         SIZE: float
@@ -69,7 +70,8 @@ class BarnesHutUniverse(Universe):
         render()
             displays the current positions of the universe's particles
         update()
-            calculates the positions and velocities of the particles in the next time-step
+            calculates the positions and velocities of the particles in the
+            next time-step
         animation()
             produces an animation of the motions of the particles
         calc_kinetic()
@@ -86,13 +88,17 @@ class BarnesHutUniverse(Universe):
         calculate_center_of_charges()
             fills the quadtree with the centre of masses of each quadrant
         """
-    def __init__(self, *args, theta: float = 0.5, max_depth: int = 6, **kwargs) -> None:
+
+    def __init__(self, *args, theta: float = 0.5, max_depth: int = 6,
+                 **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.boundary = Square(0, 0, self.SIZE * 2)  # Create boundary for BH quadtree
+        # Create boundary for BH quadtree
+        self.boundary = Square(0, 0, self.SIZE * 2)
         self.max_depth = max_depth  # Max recursion depth for BH
         self.theta = theta  # The critical ratio for BH
         self.qt = QuadTree(self.boundary, max_depth)  # Quadtree for BH
-        self.calc_acceleration = self.acceleration  # Overwrite acceleration function
+        # Overwrite acceleration function
+        self.calc_acceleration = self.acceleration
         self.update_qt()  # Initialise quadtree
 
     def acceleration(self, s: NDArray) -> NDArray:
@@ -127,12 +133,16 @@ class BarnesHutUniverse(Universe):
             r = centres - p  # Vectors between particles
             d = np.linalg.norm(r, axis=1)  # Distances between particles
             # Calculate direction between particles
-            r_norm = np.divide(r, d[:, np.newaxis], where=(np.logical_not(np.isclose(d[:, np.newaxis], 0))))
+            r_norm = np.divide(r, d[:, np.newaxis], where=(
+                np.logical_not(np.isclose(d[:, np.newaxis], 0))))
             # Update acceleration for current particles
-            a[i] = np.sum(r_norm * (self.force(d, q, charges) / m)[:, np.newaxis], axis=0)
+            a[i] = np.sum(
+                r_norm * (self.force(d, q, charges) / m)[:, np.newaxis],
+                axis=0)
         return a
 
-    def barnes_hut(self, qt: QuadTree, p: NDArray) -> tuple[list[NDArray], list]:
+    def barnes_hut(self, qt: QuadTree, p: NDArray) -> \
+            tuple[list[NDArray], list]:
         """
         Executes the Barnes-Hut algorithm
 
@@ -212,17 +222,14 @@ class BarnesHutUniverse(Universe):
 
         # Update centre of charge
         total_charge = np.sum(charges)
-        centre_of_charge = np.matmul(charges, centres)/total_charge
+        centre_of_charge = np.matmul(charges, centres) / total_charge
         qt.boundary.centre_of_charge = Point(centre_of_charge, total_charge, 0)
         return
 
     def update_qt(self) -> None:
         """
-        Inserts the universe particles into the quadtree, with relevant masses and charges
-
-        Arguments
-        ---------
-            self
+        Inserts the universe particles into the quadtree, with relevant masses
+        and charges
 
         Returns
         -------
@@ -238,9 +245,9 @@ class BarnesHutUniverse(Universe):
 
         Arguments
         ---------
-            record_energies: bool
-                option to calculate and store the potential and kinetic energies
-                slows down performance, so only use if needed
+        record_energies: bool
+            option to calculate and store the potential and kinetic energies
+            slows down performance, so only use if needed
 
         Returns
         -------
@@ -269,9 +276,11 @@ class BarnesHutUniverse(Universe):
             self.qt.draw_quads(ax)
         plt.show()
 
-    def draw_barnes_hut_quads(self, p: NDArray, qt: QuadTree, ax: plt.Axes) -> None:
+    def draw_barnes_hut_quads(self, p: NDArray, qt: QuadTree,
+                              ax: plt.Axes) -> None:
         """
-        Draw the squares that are clustered together in the Barnes-Hut algorithm
+        Draw the squares that are clustered together in the Barnes-Hut
+        algorithm
         for a certain point p.
 
         Arguments
@@ -303,26 +312,31 @@ class BarnesHutUniverse(Universe):
             patch = patches.Rectangle((qt.boundary.x - qt.boundary.r,
                                        qt.boundary.y - qt.boundary.r),
                                       qt.boundary.d, qt.boundary.d,
-                                      edgecolor="red", facecolor="none", linewidth=0.5)
+                                      edgecolor="red", facecolor="none",
+                                      linewidth=0.5)
             ax.add_patch(patch)
 
-    def _animate(self, ax: plt.Axes, scatter: plt.scatter, iterations_per_frame: int,
-                 show_squares: bool = False, barnes_hut_squares: bool = False) -> Callable[[int], None]:
+    def _animate(self, ax: plt.Axes, scatter: plt.scatter,
+                 iterations_per_frame: int,
+                 show_squares: bool = False,
+                 barnes_hut_squares: bool = False) -> Callable[[int], None]:
         """
-        Creates the animation function that has only the frame count as an argument
+        Creates the animation function that has only the frame count as an
+        argument
 
         Arguments
         ---------
             ax: plt.Axes
                 the axes to draw the animation onto
-            scatter: plt.scatter
+            scatter: plt.Scatter
                 the scatter plot that displays the particle positions
             iterations_per_frame: int
                 the number of times to call update before rendering the frame
             show_squares: bool
                 the option to draw the squares of the quadtree
             barnes_hut_squares: bool
-                the option to draw the clustered squares from the Barnes-Hut algorithm
+                the option to draw the clustered squares from the Barnes-Hut
+                algorithm
 
         Returns
         -------
@@ -330,6 +344,7 @@ class BarnesHutUniverse(Universe):
                 the animation function that is called each frame
 
         """
+
         def animate(_: int) -> None:
             """
             Updates the position of the particles on the figure

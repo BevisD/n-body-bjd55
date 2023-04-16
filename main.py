@@ -3,8 +3,6 @@ from universe import Universe
 from barneshut import BarnesHutUniverse
 from config import load_config
 from acceleration import pairwise
-np.random.seed(0)
-
 
 def main():
     data = load_config("normal_static_circle")
@@ -28,4 +26,5 @@ def main():
 
 
 if __name__ == "__main__":
+    np.random.seed(0)
     main()

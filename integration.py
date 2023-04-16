@@ -2,8 +2,8 @@
 NAME
     integration
 DESCRIPTION
-    a collection of functions that numerically integrate the positions
-    and velocities of the particles
+    a collection of functions that numerically integrate the positions and
+    velocities of the particles
 FUNCTIONS
     euler
     runge_kutta_4
@@ -13,7 +13,8 @@ from numpy.typing import NDArray
 from typing import Callable
 
 
-def euler(s: NDArray, v: NDArray, dt: float, acc_func: Callable[[NDArray], NDArray])\
+def euler(s: NDArray, v: NDArray, dt: float,
+          acc_func: Callable[[NDArray], NDArray]) \
         -> tuple[NDArray, NDArray]:
     """
     Calculates the state after the next time-step using Euler integration
@@ -43,28 +44,29 @@ def euler(s: NDArray, v: NDArray, dt: float, acc_func: Callable[[NDArray], NDArr
     return s, v
 
 
-def runge_kutta_4(s: NDArray, v: NDArray, dt: float, acc_func: Callable[[NDArray], NDArray])\
+def runge_kutta_4(s: NDArray, v: NDArray, dt: float,
+                  acc_func: Callable[[NDArray], NDArray]) \
         -> tuple[NDArray, NDArray]:
     """
-        Calculates the state after the next time-step using RK4 integration
+    Calculates the state after the next time-step using RK4 integration
 
-        Arguments
-        ---------
-            s: NDArray
-                Positions of particles
-            v: NDArray
-                Velocities of particles
-            dt: float
-                The time-step increment amount
-            acc_func: function
-                The function used to calculate the accelerations of particles
+    Arguments
+    ---------
+        s: NDArray
+            Positions of particles
+        v: NDArray
+            Velocities of particles
+        dt: float
+            The time-step increment amount
+        acc_func: function
+            The function used to calculate the accelerations of particles
 
-        Returns
-        -------
-            s: NDArray
-                The updated positions of the particles
-            v: NDArray
-                The updated velocities of the particles
+    Returns
+    -------
+        s: NDArray
+            The updated positions of the particles
+        v: NDArray
+            The updated velocities of the particles
     """
     k1_x = v
     k1_v = acc_func(s)

@@ -30,6 +30,7 @@ class Point:
             the mass of the point
 
     """
+
     def __init__(self, p: NDArray, q: float, m: float) -> None:
         self.x, self.y = p
         self.q = q
@@ -62,10 +63,11 @@ class Square:
             creates 4 new sub-quadrants for the square
 
     """
+
     def __init__(self, x, y, d) -> None:
         self.x, self.y = x, y
         self.d = d
-        self.r = d/2
+        self.r = d / 2
         self.centre_of_charge = None
 
     def __repr__(self) -> str:
@@ -110,13 +112,13 @@ class Square:
 
         """
         if quadrant == 0:
-            return Square(self.x - self.r/2, self.y + self.r/2, self.r)
+            return Square(self.x - self.r / 2, self.y + self.r / 2, self.r)
         if quadrant == 1:
-            return Square(self.x + self.r/2, self.y + self.r/2, self.r)
+            return Square(self.x + self.r / 2, self.y + self.r / 2, self.r)
         if quadrant == 2:
-            return Square(self.x - self.r/2, self.y - self.r/2, self.r)
+            return Square(self.x - self.r / 2, self.y - self.r / 2, self.r)
         if quadrant == 3:
-            return Square(self.x + self.r/2, self.y - self.r/2, self.r)
+            return Square(self.x + self.r / 2, self.y - self.r / 2, self.r)
 
 
 class QuadTree:
@@ -140,6 +142,7 @@ class QuadTree:
     -------
 
     """
+
     def __init__(self, boundary: Square, max_depth: int = 6) -> None:
         self.boundary = boundary
         self.points = []
@@ -227,8 +230,6 @@ class QuadTree:
             patch = patches.Rectangle((self.boundary.x - self.boundary.r,
                                        self.boundary.y - self.boundary.r),
                                       self.boundary.d, self.boundary.d,
-                                      edgecolor="black", facecolor="none", linewidth=0.5)
+                                      edgecolor="black", facecolor="none",
+                                      linewidth=0.5)
             ax.add_patch(patch)
-
-
-
