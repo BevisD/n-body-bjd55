@@ -1,27 +1,24 @@
 import numpy as np
+from particle import Particle
+
+from algorithms import PairWise
+from physics.forces import InverseSquare
 from universe import Universe
-from barneshut import BarnesHutUniverse
-from config import load_config
-from acceleration import pairwise
+
 
 def main():
-    data = load_config("normal_static_circle")
-    N = data["N"]
-    s = data["s"]
-    v = data["v"]
-    # N = 10
-    # s = np.random.uniform(-1, 1, (10, 2))
-    # v = np.random.uniform(-0, 0, (10, 2))
-
+    N = 100
     G = 0.01
     SOFTENING = 0.01
-    DT = 0.01
+    DT = 0.001
 
-    uni = Universe(N, G, SOFTENING, DT, s.copy(), v.copy(),
-                   world_size=2, point_size=1)
+    force = InverseSquare(G, SOFTENING)
+    algorithm = PairWise(force)
 
-    # uni.render(show_squares=True)
-    uni.animation()
+    particles = [Particle(charge=1) for _ in range(N)]
+
+    universe = Universe(particles, algorithm, DT)
+    universe.animation()
     return
 
 

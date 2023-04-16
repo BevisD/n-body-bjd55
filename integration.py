@@ -11,63 +11,28 @@ FUNCTIONS
 
 from numpy.typing import NDArray
 from typing import Callable
+from particle import Particle
+from algorithms import Algorithm
+import numpy as np
 
 
-def euler(s: NDArray, v: NDArray, dt: float,
-          acc_func: Callable[[NDArray], NDArray]) \
-        -> tuple[NDArray, NDArray]:
-    """
-    Calculates the state after the next time-step using Euler integration
+def euler(particles: list[Particle], algorithm: Algorithm, dt: float) -> None:
+    s = np.array([p.centre for p in particles])
+    v = np.array([p.velocity for p in particles])
 
-    Arguments
-    ---------
-        s: NDArray
-            Positions of particles
-        v: NDArray
-            Velocities of particles
-        dt: float
-            The time-step increment amount
-        acc_func: function
-            The function used to calculate the accelerations of particles
-
-    Returns
-    -------
-        s: NDArray
-            The updated positions of the particles
-        v: NDArray
-            The updated velocities of the particles
-
-    """
-    a = acc_func(s)
+    a = algorithm.calculate_accelerations(particles)
     v += a * dt
     s += v * dt
-    return s, v
+
+    for particle, pos, vel in zip(particles, s, v):
+        particle.centre = pos
+        particle.velocity = vel
 
 
 def runge_kutta_4(s: NDArray, v: NDArray, dt: float,
                   acc_func: Callable[[NDArray], NDArray]) \
         -> tuple[NDArray, NDArray]:
-    """
-    Calculates the state after the next time-step using RK4 integration
 
-    Arguments
-    ---------
-        s: NDArray
-            Positions of particles
-        v: NDArray
-            Velocities of particles
-        dt: float
-            The time-step increment amount
-        acc_func: function
-            The function used to calculate the accelerations of particles
-
-    Returns
-    -------
-        s: NDArray
-            The updated positions of the particles
-        v: NDArray
-            The updated velocities of the particles
-    """
     k1_x = v
     k1_v = acc_func(s)
 
