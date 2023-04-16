@@ -15,9 +15,28 @@ class BarnesHut(Algorithm):
         for particle in particles:
             self.qt.insert(particle)
 
-    def barnes_hut_algorithm(self, qt, particle: Particle):
+    def calculate_centre_of_charges(self, qt: QuadTree):
         if qt.divided:
+            centre_of_charges = []
+            for sub_quad in qt.quadrants:
+                self.calculate_centre_of_charges(sub_quad)
+                centre_of_charges.append(sub_quad.boundary.centre_of_charge)
 
+            centres = [p.centre for p in centre_of_charges]
+            charges = [p.charge for p in centre_of_charges]
+
+        elif qt.points is not None and len(qt.particles) != 0:
+            centres = [p.centre for p in qt.particles]
+            charges = [p.charge for p in qt.particles]
+
+        else:
+            return Particle(0, 0, 0j, 0j)
+
+        total_charge = np.sum(charges)
+        centre_of_charge = np.matmul(charges, centres) / total_charge
+        qt.boundary.centre_of_charge = Particle(total_charge, 0,
+                                                centre_of_charge)
+        return
 
     def calculate_accelerations(self, particles: list[Particle]) -> \
             NDArray[complex]:
