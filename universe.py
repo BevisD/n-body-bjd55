@@ -12,7 +12,7 @@ class Universe:
                  dt: float, integration: callable = euler):
         self.algorithm = algorithm
         self.particles = particles
-        self.integration = euler
+        self.integration = integration
         self.dt = dt
         self.T = 0
 

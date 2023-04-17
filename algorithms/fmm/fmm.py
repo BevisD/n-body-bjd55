@@ -13,9 +13,104 @@ from scipy.special import binom
 from particle import Particle
 from index import Index
 from numpy.typing import NDArray
+from algorithms import Algorithm
+
+__all__ = ["FMM", "cluster_particles", "generate_box_positions",
+           "generate_expansion_arrays", "calculate_exact_potentials"]
 
 
-class FMM:
+def cluster_particles(level: int, particles: list[Particle]) -> \
+        NDArray[set]:
+    """
+    creates sets of particle indices that each lie within the same cell
+
+    Arguments
+    ---------
+        level: int
+            the depth of the quadtree cells to sort particles into
+        particles: list[Particle]
+            the list of particles to cluster into cells
+
+    Returns
+    -------
+        clusters: 2DArray[set]
+            a 2DArray containing sets of particles that each lie within a
+            specific cell
+    """
+    clusters = np.empty((2 ** level, 2 ** level), dtype=object)
+    for x in range(2 ** level):
+        for y in range(2 ** level):
+            clusters[x, y] = set()
+
+    for i, particle in enumerate(particles):
+        try:
+            index = particle.index(level).index
+            clusters[index].add(i)
+
+        except ValueError:
+            continue
+    return clusters
+
+
+def generate_box_positions(max_level) -> list[NDArray[complex]]:
+    """
+    creates the lists that contain the centres of the boxes at each level
+    the coordinates are given as a complex number
+
+    Returns
+    -------
+        box_positions: list[NDArray[complex]]
+            a list of 2DArrays, each containing the position of the centre
+            of the cell at each level, represented by a complex number
+    """
+    # Initialise empty position array
+    box_positions = [np.zeros((2 ** i, 2 ** i), dtype=complex)
+                     for i in range(max_level + 1)]
+
+    for level, array in enumerate(box_positions):
+        half_width = 1 / 2 ** (level + 1)
+        coords = np.arange(half_width, 1, 2 * half_width)
+
+        X, Y = np.meshgrid(coords, coords)
+        array[...] = X + 1.0j * Y
+
+    return box_positions
+
+
+def generate_expansion_arrays(max_level, precision) -> list[NDArray[complex]]:
+    """
+    Creates a list of empty arrays to store the expansion coefficients
+
+    Returns
+    -------
+        expansion_arrays: list[NDArray[complex]]
+            a list of empty 2DArrays to be filled with multipole/local
+            expansion coefficients
+    """
+    expansion_arrays = [np.zeros((2 ** i, 2 ** i, precision + 1),
+                                 dtype=complex) for i in
+                        range(max_level + 1)]
+
+    return expansion_arrays
+
+
+def calculate_exact_potentials(particles: list[Particle]) -> None:
+    """
+    Calculates the exact potentials of each particle used for debugging
+    and accuracy comparisons
+
+    Returns
+    -------
+        None
+    """
+    for i, particle_1 in enumerate(particles):
+        particle_1.potential = 0
+        for particle_2 in particles[:i] + particles[i + 1:]:
+            z = particle_1.centre - particle_2.centre
+            particle_1.potential += - particle_2.charge * np.log(z).real
+
+
+class FMM(Algorithm):
     """
     A class to implement the FMM algorithm
 
@@ -25,8 +120,6 @@ class FMM:
             the number of terms to expand the multipole to
         max_level: int > 0
             the maximum depth to build the multipole to
-        particles: list[Particle]
-            the list of particles in the universe
         box_positions: list[2DArray[complex]]
             the array indices 
         multi_expansion_arrays: list[2DArray[complex]]
@@ -39,12 +132,6 @@ class FMM:
 
     METHODS
     -------
-        generate_box_positions()
-            creates a 2DArray initialised with the positions of the centres of
-            the cells
-        generate_expansion_arrays()
-            creates a list of empty 3DArrays for storing the expansion terms at
-            each cell at each level
         calculate_multipoles()
             calculates the multipole expansion coefficients for each cell at a
             certain level
@@ -60,71 +147,27 @@ class FMM:
         calculate_potentials()
             uses the expansion coefficients to update the potentials of each
             particle
-        cluster_particles()
-            groups the particles into sets of particles that each lie within
-            the same cell
         upward_pass()
             executes the upward pass for the FMM algorithm
         downward_pass()
             executes the downward pass for the FMM algorithm
         fmm_algorithm()
             executes the FMM algorithm
-        calculate_exact_potentials()
-            calculates the exact values of the potentials for the particles
-            used mainly for debugging and accuracy tests
     """
 
-    def __init__(self, precision: int, max_level: int,
-                 particles: list[Particle]) -> None:
+    def __init__(self,  max_level: int, precision: int, K) -> None:
         self.precision = precision
         self.max_level = max_level
-        self.particles = particles
-        self.box_positions = self.generate_box_positions()
-        self.multi_expansion_arrays = self.generate_expansion_arrays()
-        self.local_expansion_arrays = self.generate_expansion_arrays()
-        self.particle_clusters = self.cluster_particles(self.max_level)
+        self.K = K
+        self.box_positions = generate_box_positions(self.max_level)
+        self.multi_expansion_arrays = generate_expansion_arrays(self.max_level,
+                                                                self.precision)
+        self.local_expansion_arrays = generate_expansion_arrays(self.max_level,
+                                                                self.precision)
+        self.particle_clusters = None
 
-    def generate_box_positions(self) -> list[NDArray[complex]]:
-        """
-        creates the lists that contain the centres of the boxes at each level
-        the coordinates are given as a complex number
-
-        Returns
-        -------
-            box_positions: list[NDArray[complex]]
-                a list of 2DArrays, each containing the position of the centre
-                of the cell at each level, represented by a complex number
-        """
-        # Initialise empty position array
-        box_positions = [np.zeros((2 ** i, 2 ** i), dtype=complex)
-                         for i in range(self.max_level + 1)]
-
-        for level, array in enumerate(box_positions):
-            half_width = 1 / 2 ** (level + 1)
-            coords = np.arange(half_width, 1, 2 * half_width)
-
-            X, Y = np.meshgrid(coords, coords)
-            array[...] = X + 1.0j * Y
-
-        return box_positions
-
-    def generate_expansion_arrays(self) -> list[NDArray[complex]]:
-        """
-        Creates a list of empty arrays to store the expansion coefficients
-
-        Returns
-        -------
-            expansion_arrays: list[NDArray[complex]]
-                a list of empty 2DArrays to be filled with multipole/local
-                expansion coefficients
-        """
-        expansion_arrays = [np.zeros((2 ** i, 2 ** i, self.precision + 1),
-                                     dtype=complex) for i in
-                            range(self.max_level + 1)]
-
-        return expansion_arrays
-
-    def calculate_mutipoles(self, level: int) -> None:
+    def calculate_mutipoles(self, level: int,
+                            particles: list[Particle]) -> None:
         """
         calculates the multipole expansion coefficients at a specific level
 
@@ -132,14 +175,20 @@ class FMM:
         ---------
             level: int
                 the depth of the quadtree to calculate multipoles for
+            particles: list[Particle]
+                the list of particles to do the multipole expansion on
 
         Returns
         -------
             None
 
         """
-        for particle in self.particles:
-            index = particle.index(level).index
+        for particle in particles:
+            try:
+                index = particle.index(level).index
+            except ValueError:
+                continue
+
             z_0 = particle.centre - self.box_positions[level][index]
             k_vals = np.arange(1, self.precision + 1)
 
@@ -275,10 +324,15 @@ class FMM:
                                z_0 ** (k - L[:, np.newaxis]), axis=1)
                     child_arr[child.index] = d
 
-    def calculate_potentials(self) -> None:
+    def calculate_potentials(self, particles: list[Particle]) -> None:
         """
         Calculates the potentials of each particle using the expansion
         coefficients
+
+        Arguments
+        ---------
+            particles: list[Particle]
+                the list of particles to calcuate the potentials for
 
         Returns
         -------
@@ -287,7 +341,7 @@ class FMM:
         local_expansion = self.local_expansion_arrays[self.max_level]
         L = np.arange(self.precision + 1)
 
-        for i, particle in enumerate(self.particles):
+        for i, particle in enumerate(particles):
             potential = 0
             current = particle.index(self.max_level)
             neighbours = current.neighbours()
@@ -299,48 +353,74 @@ class FMM:
             potential += -d_vals @ z ** L
 
             # do pairwise interactions for neighbouring cells
-            indices = self.particle_clusters[current.index]
+            indices = self.particle_clusters[current.index].copy()
             indices.remove(i)
             for cell in neighbours:
                 indices = indices.union(self.particle_clusters[cell.index])
 
             for index in indices:
-                other = self.particles[index]
+                other = particles[index]
                 z = particle.centre - other.centre
                 potential += -other.charge * np.log(z)
 
             # update potential with real part of calculated potential
-            particle.potential = potential.real
+            particle.potential = self.K * potential.real
 
-    def calculate_forces(self) -> None:
-        pass
-
-    def cluster_particles(self, level: int) -> NDArray[set]:
+    def calculate_accelerations(self, particles: list[Particle]) -> \
+            NDArray[complex]:
         """
-        creates sets of particles that each lie within the same cell
+        calculates the instantaneous accelerations of each particle
 
         Arguments
         ---------
-            level: int
-                the depth of the quadtree cells to sort particles into
+            particles: list[Particle]
+                the list of particles to calculate the accelerations for
 
         Returns
         -------
-            clusters: 2DArray[set]
-                a 2DArray containing sets of particles that each lie within a
-                specific cell
+            accelerations: NDArray[complex]
+                the accelerations for each particle, as a complex number
         """
-        clusters = np.empty((2 ** level, 2 ** level), dtype=object)
-        for x in range(2 ** level):
-            for y in range(2 ** level):
-                clusters[x, y] = set()
+        self.fmm_algorithm(particles)
 
-        for i, particle in enumerate(self.particles):
-            index = particle.index(level).index
-            clusters[index].add(i)
-        return clusters
+        local_expansion = self.local_expansion_arrays[self.max_level]
+        L = np.arange(self.precision + 1)
 
-    def upward_pass(self) -> None:
+        N = len(particles)
+        accelerations = np.zeros(N, dtype=complex)
+
+        for i, particle in enumerate(particles):
+            force = 0j
+            try:
+                current = particle.index(self.max_level)
+            except ValueError:
+                continue
+            neighbours = current.neighbours()
+
+            z = particle.centre - self.box_positions[self.max_level][
+                current.index]
+
+            d_vals = local_expansion[current.index]
+            force += particle.charge * L @ (d_vals * z ** (L - 1))
+
+            neighbour_indices = self.particle_clusters[current.index].copy()
+            neighbour_indices.remove(i)
+            for neighbour_cell in neighbours:
+                neighbour_indices = neighbour_indices.union(self.particle_clusters[neighbour_cell.index])
+
+            for neighbour_index in neighbour_indices:
+                other = particles[neighbour_index]
+                z = particle.centre - other.centre
+                force += other.charge * particle.charge / z
+
+            accelerations[i] += self.K * force.conjugate() / particle.mass
+
+        return accelerations
+
+    def animate(self, fig, ax, scatter) -> None:
+        return
+
+    def upward_pass(self, particles: list[Particle]) -> None:
         """
         executes the upward pass of the FMM algorithm
 
@@ -348,7 +428,13 @@ class FMM:
         -------
             None
         """
-        self.calculate_mutipoles(self.max_level)
+        self.particle_clusters = cluster_particles(self.max_level, particles)
+
+        for i in range(self.max_level+1):
+            self.multi_expansion_arrays[i] *= 0
+            self.local_expansion_arrays[i] *= 0
+
+        self.calculate_mutipoles(self.max_level, particles)
         for level in range(self.max_level, 0, -1):
             # stop at level = 1 as this is the lowest child level
             self.multi_to_multi(level)
@@ -367,7 +453,7 @@ class FMM:
             self.local_to_local(level)
         self.multi_to_local(self.max_level)
 
-    def fmm_algorithm(self) -> None:
+    def fmm_algorithm(self, particles: list[Particle]) -> None:
         """
         Executes the FMM algorithm
 
@@ -375,21 +461,7 @@ class FMM:
         -------
             None
         """
-        self.upward_pass()
+        self.upward_pass(particles)
         self.downward_pass()
         # TODO: calculate forces at each point
 
-    def calculate_exact_potentials(self) -> None:
-        """
-        Calculates the exact potentials of each particle used for debugging
-        and accuracy comparisons
-
-        Returns
-        -------
-            None
-        """
-        for i, particle_1 in enumerate(self.particles):
-            particle_1.potential = 0
-            for particle_2 in self.particles[:i] + self.particles[i + 1:]:
-                z = particle_1.centre - particle_2.centre
-                particle_1.potential += - particle_2.charge * np.log(z).real

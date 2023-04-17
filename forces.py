@@ -18,11 +18,13 @@ from particle import Particle
 class Force(metaclass=ABCMeta):
 
     @abstractmethod
-    def calculate_force(self, particle1: Particle, particle2: Particle):
+    def calculate_force(self, particle1: Particle, particle2: Particle) -> \
+            complex:
         pass
 
     @abstractmethod
-    def calculate_potential(self, particle1: Particle, particle2: Particle):
+    def calculate_potential(self, particle1: Particle, particle2: Particle) -> \
+            complex:
         pass
 
 
@@ -36,7 +38,7 @@ class InverseSquare(Force):
             Union[float, NDArray]:
         r = particle2.centre - particle1.centre
         d = abs(r)
-        force = self.K * particle1.charge * particle2.charge * r / (
+        force = -self.K * particle1.charge * particle2.charge * r / (
                     d * (d ** 2 + self.SOFTENING ** 2))
         return force
 
@@ -45,4 +47,21 @@ class InverseSquare(Force):
         potential = 0
         # potential = q1 * q2 * self.K * (
         #             np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING
+        return potential
+
+
+class Inverse(Force):
+    def __init__(self, K):
+        self.K = K
+
+    def calculate_force(self, particle1: Particle, particle2: Particle) -> \
+            complex:
+        z = particle2.centre - particle1.centre
+        force = -self.K * particle1.charge * particle2.charge / z.conjugate()
+        return force
+
+    def calculate_potential(self, particle1: Particle, particle2: Particle) ->\
+            float:
+        z = particle2.centre - particle1.centre
+        potential = - self.K * particle2.charge * np.log(z).real
         return potential

@@ -46,7 +46,7 @@ class Particle:
         if centre:
             self.centre = centre
         else:
-            self.centre = np.random.random() + 1j * np.random.random()
+            self.centre = np.random.uniform(0.3, 0.7) + 1j * np.random.uniform(0.3, 0.7)
 
         self.velocity = velocity
 

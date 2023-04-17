@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from numpy.typing import NDArray
 from particle import Particle
 
 
-class Algorithm(metaclass=ABCMeta):
+class Algorithm(ABC):
     @abstractmethod
     def calculate_accelerations(self, particles: list[Particle]) -> \
             NDArray[complex]:

@@ -41,7 +41,7 @@ class Index:
         if level < 0:
             raise ValueError(f"Index cannot have level {level} < 0")
         if (i < 0 or i >= 2 ** level or
-                i < 0 or i >= 2 ** level):
+                j < 0 or j >= 2 ** level):
             raise ValueError(
                 f"Index ({i}, {j}) is out of bounds for level {level}")
 

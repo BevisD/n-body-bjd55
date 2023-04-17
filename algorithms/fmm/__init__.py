@@ -1,1 +1,1 @@
-from .fmm import FMM
+from .fmm import *
