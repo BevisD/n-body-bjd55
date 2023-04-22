@@ -1,1 +1,1 @@
-from .pair_wise import PairWise
+from .pair_wise import *

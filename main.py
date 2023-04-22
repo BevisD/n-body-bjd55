@@ -1,38 +1,49 @@
 import numpy as np
-from particle import Particle
 import matplotlib.pyplot as plt
 
+from particle import Particle
 from algorithms import BarnesHut, FMM, PairWise
-from forces import InverseSquare, Inverse
+from forces import Inverse
 from universe import Universe
-from index import Index
+from integration import runge_kutta_4
+from time import perf_counter
+
 
 def main():
-    N = 1000
-    G = 0.01
-    SOFTENING = 0.01
-    DT = 0.01
-    EPSILON = 1e-3
-
-    MAX_LEVEL = int(np.log(N)/np.log(4))
-    PRECISION = int(-np.log2(EPSILON))
-
+    N = 100
+    G = -1
+    DT = 0.001
+    THETA = 0.5
+    DEPTH = 3
+    P = 4
     force = Inverse(G)
 
     PW_algorithm = PairWise(force)
-    FMM_algorithm = FMM(MAX_LEVEL, PRECISION, G)
-    particles = [Particle() for _ in range(N)]
+    BH_algorithm = BarnesHut(force, theta=THETA)
+    FMM_algorithm = FMM(DEPTH, P, G)
 
+    particles = [
+        Particle(charge=1 / np.sqrt(N),
+                 velocity=complex(np.random.uniform(-0.1, 0.1),
+                                  np.random.uniform(-0.1, 0.1))) for _ in
+        range(N)]
 
+    universe = Universe(particles, BH_algorithm, DT, periodic_boundary=True)
+    universe.animation(frames=200,
+                       verbose=10,
+                       iters_per_frame=10,
+                       text=rf"${N=}$, ${G=}$, ${THETA=}$, EULER, F=INVERSE, ALG=BARNES-HUT",
+                       filename="BH_clusters.gif",
+                       show_squares=True,
+                       barnes_hut_point=Particle(centre=complex(0.5, 0.5))
+                       )
 
-    # PW_acc = PW_algorithm.calculate_accelerations(particles)
-    # FMM_acc = FMM_algorithm.calculate_accelerations(particles)
-
-    universe = Universe(particles, FMM_algorithm, DT)
-    universe.animation()
     return
 
 
 if __name__ == "__main__":
+    t1 = perf_counter()
     np.random.seed(0)
     main()
+    t2 = perf_counter()
+    print(f"Executed in {t2 - t1:.2E}s")

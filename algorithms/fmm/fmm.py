@@ -14,6 +14,9 @@ from particle import Particle
 from index import Index
 from numpy.typing import NDArray
 from algorithms import Algorithm
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from forces import Inverse
 
 __all__ = ["FMM", "cluster_particles", "generate_box_positions",
            "generate_expansion_arrays", "calculate_exact_potentials"]
@@ -52,10 +55,15 @@ def cluster_particles(level: int, particles: list[Particle]) -> \
     return clusters
 
 
-def generate_box_positions(max_level) -> list[NDArray[complex]]:
+def generate_box_positions(level: int) -> list[NDArray[complex]]:
     """
     creates the lists that contain the centres of the boxes at each level
     the coordinates are given as a complex number
+
+    Arguments
+    ---------
+        level: int
+            the level of the cells to cluster the particles into
 
     Returns
     -------
@@ -65,7 +73,7 @@ def generate_box_positions(max_level) -> list[NDArray[complex]]:
     """
     # Initialise empty position array
     box_positions = [np.zeros((2 ** i, 2 ** i), dtype=complex)
-                     for i in range(max_level + 1)]
+                     for i in range(level + 1)]
 
     for level, array in enumerate(box_positions):
         half_width = 1 / 2 ** (level + 1)
@@ -80,6 +88,15 @@ def generate_box_positions(max_level) -> list[NDArray[complex]]:
 def generate_expansion_arrays(max_level, precision) -> list[NDArray[complex]]:
     """
     Creates a list of empty arrays to store the expansion coefficients
+
+    Arguments
+    ---------
+        max_level: int
+            the maximum level of the cells to generate expansion arrays.
+            Returns levels up to max_level + 1
+        precision: int
+            the number of expansion terms to allow space for in the array.
+            There are precision + 1 terms as they are indexed from 0
 
     Returns
     -------
@@ -96,8 +113,13 @@ def generate_expansion_arrays(max_level, precision) -> list[NDArray[complex]]:
 
 def calculate_exact_potentials(particles: list[Particle]) -> None:
     """
-    Calculates the exact potentials of each particle used for debugging
-    and accuracy comparisons
+    Calculates and updates the exact potentials of each particle used for
+    debugging and accuracy comparisons
+
+    Arguments
+    ---------
+        particles: list[Particle]
+            the list of particles to calculate the potentials for
 
     Returns
     -------
@@ -120,6 +142,11 @@ class FMM(Algorithm):
             the number of terms to expand the multipole to
         max_level: int > 0
             the maximum depth to build the multipole to
+        K: float
+            the scaling factor for the force between particles
+        calculate_potential: callable
+            the function to calculate the potential energy between two
+            particles in the universe
         box_positions: list[2DArray[complex]]
             the array indices 
         multi_expansion_arrays: list[2DArray[complex]]
@@ -147,6 +174,12 @@ class FMM(Algorithm):
         calculate_potentials()
             uses the expansion coefficients to update the potentials of each
             particle
+        calculate_accelerations()
+            uses the expansion coefficients to calculate the accelerations for
+            each particle
+        animate()
+            draws additional information that may be useful to the animation,
+            e.g. cell boundaries
         upward_pass()
             executes the upward pass for the FMM algorithm
         downward_pass()
@@ -159,6 +192,7 @@ class FMM(Algorithm):
         self.precision = precision
         self.max_level = max_level
         self.K = K
+        self.calculate_potential = Inverse(K).calculate_potential
         self.box_positions = generate_box_positions(self.max_level)
         self.multi_expansion_arrays = generate_expansion_arrays(self.max_level,
                                                                 self.precision)
@@ -245,8 +279,8 @@ class FMM(Algorithm):
         converts a multipole expansion at well_seperated cell to a local
         expansion at the centre of the current cell
 
-        Argument
-        --------
+        Arguments
+        ---------
             level: int
                 the depth of the quadtree to do the expansion on
 
@@ -332,7 +366,7 @@ class FMM(Algorithm):
         Arguments
         ---------
             particles: list[Particle]
-                the list of particles to calcuate the potentials for
+                the list of particles to calculate the potentials for
 
         Returns
         -------
@@ -417,12 +451,53 @@ class FMM(Algorithm):
 
         return accelerations
 
-    def animate(self, fig, ax, scatter) -> None:
+    def draw_cell_boundaries(self, ax: plt.Axes) -> None:
+        d = 1 / 2 ** self.max_level
+        for row in self.box_positions[self.max_level]:
+            for cell in row:
+                x = cell.real
+                y = cell.imag
+                patch = patches.Rectangle((x-d/2, y-d/2), d, d,
+                                          edgecolor="black", facecolor="none",
+                                          linewidth=0.5)
+                ax.add_patch(patch)
+
+    def animate(self, fig: plt.Figure, ax: plt.Axes, scatter: plt.Subplot,
+                show_squares: bool = False, **kwargs) -> None:
+        """
+        Draws additional information that may be useful to the animation. e.g.
+        cell boundaries
+
+        Arguments
+        ---------
+            fig: plt.Figure
+                the matplotlib figure to draw onto
+            ax: plt.Axes
+                the matplotlib axes to draw onto
+            scatter: plt.Subplot
+                the matplotlib scatter plot to modify
+            show_squares: bool
+                option to draw the cell boundaries
+
+        Returns
+        -------
+            None
+        """
+
+        if show_squares:
+            [p.remove() for p in reversed(ax.patches)]
+            self.draw_cell_boundaries(ax)
+
         return
 
     def upward_pass(self, particles: list[Particle]) -> None:
         """
         executes the upward pass of the FMM algorithm
+
+        Arguments
+        ---------
+            particles: list[Particle]
+                the list of particles needed for the upward pass
 
         Returns
         -------
@@ -457,11 +532,16 @@ class FMM(Algorithm):
         """
         Executes the FMM algorithm
 
+        Arguments
+        ---------
+            particles: list[Particle]
+                the list of particles needed for the FMM algorithm
+
         Returns
         -------
             None
         """
         self.upward_pass(particles)
         self.downward_pass()
-        # TODO: calculate forces at each point
+
 

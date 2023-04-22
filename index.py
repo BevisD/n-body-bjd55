@@ -9,10 +9,12 @@ CLASSES
 
 from __future__ import annotations
 
+__all__ = ["Index"]
+
 
 class Index:
     """
-    A class that represents the index of a particle in the FMM algorithm
+    A class that represents the index of a particle in a quadtree.
     Each particle is placed into a box with a 2D index
 
     Attributes
@@ -34,6 +36,11 @@ class Index:
         creates the indices that are well seperated from the cell
         well seperated cells are the children of the cell's parent that are not
          the cell's direct neighbours
+
+    Raises
+    ------
+        ValueError: for an index with level < 0
+        ValueError: for an index out of bounds for a given level
 
     """
 

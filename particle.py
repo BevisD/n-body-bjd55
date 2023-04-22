@@ -10,6 +10,8 @@ CLASSES
 import numpy as np
 from index import Index
 
+__all__ = ["Particle"]
+
 
 class Particle:
     """
@@ -22,9 +24,16 @@ class Particle:
         mass: float
             the mass of the particle
         centre: complex
-            the position of the particle,
-            the real component is the x coordinate
-            the imag component is the y coordinate
+             the position of the particle,
+             the real component is the x coordinate
+             the imag component is the y coordinate
+        velocity: complex
+            the velocity of the particle,
+            the real component is the x velocity
+            the imag component is the y velocity
+        potential: float
+            the potential of the particle
+
 
     Methods
     -------
@@ -46,7 +55,7 @@ class Particle:
         if centre:
             self.centre = centre
         else:
-            self.centre = np.random.uniform(0.3, 0.7) + 1j * np.random.uniform(0.3, 0.7)
+            self.centre = np.random.uniform() + 1j * np.random.uniform()
 
         self.velocity = velocity
 
@@ -71,11 +80,18 @@ class Particle:
         j = int(self.centre.real * 2 ** level)
 
         return Index(i, j, level)
+    
+    def periodic_boundary_conditions(self):
+        x, y = self.centre.real, self.centre.imag
+
+        x %= 1
+        y %= 1
+        self.centre = complex(x, y)
 
     def __repr__(self) -> str:
         return f"Particle({self.charge}, {self.centre}, {self.potential})"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: any) -> bool:
         return (self.charge == other.charge and
                 self.centre == other.centre)
 
@@ -93,3 +109,12 @@ class Particle:
 
     def __hash__(self) -> int:
         return hash(self.__key())
+
+    def __add__(self, other):
+        # Shifts the centre of a particle if a complex number is added
+        if isinstance(other, complex):
+            return Particle(self.charge, self.mass, self.centre + other,
+                            self.velocity)
+
+    def copy(self):
+        return Particle(self.charge, self.mass, self.centre, self.velocity)

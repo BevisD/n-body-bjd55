@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from particle import Particle
 from typing import List
 
+__all__ = ["Square", "QuadTree"]
+
 
 class Square:
     """
@@ -21,19 +23,21 @@ class Square:
 
     Attributes
     ----------
-        x, y: float
-            the x and y position coordinates of the centre of the square
+        centre: complex
+            the position of the centre of the square, given as a complex number
+            where the real/imaginary components correspond to the x/y
+            coordinates
         d: float
             the width of the square
         r: float
             half the width of the square
-        centre_of_charge: Point
+        centre_of_charge: Particle
             the centre of charge of the square
 
     Methods
     -------
         contains()
-            determines whether a point lies within the square
+            determines whether a particle lies within the square
         subdivide()
             creates 4 new sub-quadrants for the square
 
@@ -55,7 +59,7 @@ class Square:
         Arguments
         ---------
             particle: Particle
-                the point to test
+                the point to test whether it lies within the square
 
         Returns
         -------
@@ -78,11 +82,11 @@ class Square:
         Arguments
         ---------
             quadrant: int
-                the quadrant number
-                NW: 0
-                NE: 1
-                SW: 2
-                SE: 3
+                | the quadrant number
+                | NW: 0
+                | NE: 1
+                | SW: 2
+                | SE: 3
 
         Returns
         -------
@@ -107,8 +111,8 @@ class QuadTree:
     ----------
         boundary: Square
             the boundary of the quadrant
-        points: List[Point]
-            the list of points inside the quadrant
+        particles: List[Particle]
+            the list of particles inside the quadrant
         divided: bool
             whether the quadrant has subdivided
         max_d: int
@@ -118,7 +122,14 @@ class QuadTree:
 
     Methods
     -------
-
+        clear()
+            removes all particles and sub_quadrants from the quadtree
+        subdivide()
+            generates 4 new quadtree children
+        insert()
+            inserts a particle into the quadtree's particle list
+        draw_quads()
+            recursively draws the quadtree boundaries to a matplotlib axes
     """
 
     def __init__(self, boundary: Square, max_depth: int = 6) -> None:
@@ -130,7 +141,7 @@ class QuadTree:
 
     def clear(self) -> None:
         """
-        Empties the quadtree and resets its structure
+        Removes all particles and sub-quadtrees from the quadtree
 
         Returns
         -------
@@ -143,7 +154,7 @@ class QuadTree:
 
     def subdivide(self) -> None:
         """
-        Subdivides the quadtree into four smaller sub-quad-trees
+        Subdivides the quadtree into four smaller children sub-quad-trees
 
         Returns
         -------
@@ -165,8 +176,8 @@ class QuadTree:
 
         Arguments
         ---------
-            p: Point
-                the point to insert into the quadtree
+            particle: Particle
+                the particle to insert into the quadtree
 
         Returns
         -------
@@ -190,7 +201,7 @@ class QuadTree:
 
     def draw_quads(self, ax: plt.Axes) -> None:
         """
-        Draws the boundaries of the quadtree onto the axes
+        Recursively draws the boundaries of the quadtree onto a matplotlib axes
 
         Arguments
         ---------
