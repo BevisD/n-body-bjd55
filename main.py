@@ -28,15 +28,8 @@ def main():
                                   np.random.uniform(-0.1, 0.1))) for _ in
         range(N)]
 
-    universe = Universe(particles, BH_algorithm, DT, periodic_boundary=True)
-    universe.animation(frames=200,
-                       verbose=10,
-                       iters_per_frame=10,
-                       text=rf"${N=}$, ${G=}$, ${THETA=}$, EULER, F=INVERSE, ALG=BARNES-HUT",
-                       filename="BH_clusters.gif",
-                       show_squares=True,
-                       barnes_hut_point=Particle(centre=complex(0.5, 0.5))
-                       )
+    universe = Universe(particles, FMM_algorithm, DT, periodic_boundary=True)
+    universe.animation()
 
     return
 
