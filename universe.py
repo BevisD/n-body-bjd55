@@ -92,8 +92,8 @@ class Universe:
         return x, y
 
     def animation(self, frames: int = 100, iters_per_frame: int = 1,
-                  filename: str = None, verbose: int = 0, **kwargs) -> \
-            None:
+                  filename: str = None, verbose: int = 0, 
+                  notebook: bool = False, **kwargs) -> None:
         """
         Displays an animation of the motion of the particles in the universe
 
@@ -152,6 +152,8 @@ class Universe:
             if os.path.isfile(path):
                 raise ValueError(f"File already exists - {path}")
             anim.save(path, dpi=300)
+        elif notebook:
+            return anim
         else:
             plt.show()
 

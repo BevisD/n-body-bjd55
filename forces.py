@@ -99,7 +99,7 @@ class InverseSquare(Force):
         self.SOFTENING = softening
 
     def calculate_force(self, particle1: Particle, particle2: Particle) -> \
-            Union[float, NDArray]:
+            complex:
         r = particle2.centre - particle1.centre
         d = abs(r)
         force = -self.K * particle1.charge * particle2.charge * r / (
@@ -107,10 +107,18 @@ class InverseSquare(Force):
         return force
 
     def calculate_potential(self, particle1: Particle, particle2: Particle) ->\
-            Union[float, NDArray]:
+            float:
         potential = 0
-        # potential = q1 * q2 * self.K * (
-        #             np.pi / 2 - np.arctan(r / self.SOFTENING)) / self.SOFTENING
+        z = particle1.centre - particle2.centre
+        q1 = particle1.charge
+        q2 = particle2.charge
+        s = self.SOFTENING
+        if s == 0:
+            potential = -q1*q2 / (4*np.pi*abs(z))
+        else:
+            potential = q1*q1 / (8*s) * (
+                2/np.pi * np.arctan(abs(z)/s) - 1
+            )
         return potential
 
 
