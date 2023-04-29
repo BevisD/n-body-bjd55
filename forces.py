@@ -151,5 +151,5 @@ class Inverse(Force):
     def calculate_potential(self, particle1: Particle, particle2: Particle) ->\
             float:
         z = particle2.centre - particle1.centre
-        potential = - self.K * particle2.charge * np.log(z).real
+        potential = - self.K * particle2.charge * particle1.charge * np.log(z).real
         return potential

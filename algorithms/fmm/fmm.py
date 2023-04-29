@@ -171,7 +171,7 @@ class FMM(Algorithm):
         local_to_local()
             converts a local expansion about the centre of a cell to a local
             expansion about the centre of a child cell
-        calculate_potentials()
+        update_particle_potentials()
             uses the expansion coefficients to update the potentials of each
             particle
         calculate_accelerations()
@@ -358,10 +358,10 @@ class FMM(Algorithm):
                                z_0 ** (k - L[:, np.newaxis]), axis=1)
                     child_arr[child.index] = d
 
-    def calculate_potentials(self, particles: list[Particle]) -> None:
+    def update_particle_potentials(self, particles: list[Particle]) -> None:
         """
-        Calculates the potentials of each particle using the expansion
-        coefficients
+        Calculates and updates the potentials of each particle using
+        the expansion coefficients
 
         Arguments
         ---------
@@ -429,6 +429,7 @@ class FMM(Algorithm):
                 current = particle.index(self.max_level)
             except ValueError:
                 continue
+
             neighbours = current.neighbours()
 
             z = particle.centre - self.box_positions[self.max_level][

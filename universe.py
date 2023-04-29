@@ -168,13 +168,13 @@ class Universe:
     def calculate_kinetic_energy(self):
         energy = 0.0
         for particle in self.particles:
-            energy += 0.5 * particle.mass * abs(particle.velocity) ** 2
+            energy += 0.5 * particle.mass * abs(particle.velocity)**2
         return energy
 
     def calculate_potential(self):
         energy = 0.0
         for i, particle1 in enumerate(self.particles):
-            for particle2 in enumerate(self.particles[i + 1:], start=i + 1):
+            for particle2 in self.particles[i + 1:]:
                 energy += self.algorithm.calculate_potential(particle1,
                                                              particle2)
         return energy

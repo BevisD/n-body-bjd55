@@ -11,11 +11,11 @@ from time import perf_counter
 
 def main():
     N = 100
-    G = -1
-    DT = 0.001
+    G = 1
+    DT = 0.01
     THETA = 0.5
     DEPTH = 3
-    P = 4
+    P = 5
     force = Inverse(G)
 
     PW_algorithm = PairWise(force)
@@ -23,12 +23,10 @@ def main():
     FMM_algorithm = FMM(DEPTH, P, G)
 
     particles = [
-        Particle(charge=1 / np.sqrt(N),
-                 velocity=complex(np.random.uniform(-0.1, 0.1),
-                                  np.random.uniform(-0.1, 0.1))) for _ in
+        Particle(charge=1 / np.sqrt(N)) for _ in
         range(N)]
 
-    universe = Universe(particles, FMM_algorithm, DT, periodic_boundary=True)
+    universe = Universe(particles, FMM_algorithm, DT)
     universe.animation()
 
     return
