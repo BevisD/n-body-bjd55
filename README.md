@@ -1,5 +1,7 @@
 # Hierarchical methods for $N$-body simulation
 
+**The written report for this project is in the** ```report.ipynb``` **notebook**
+
 This repository contains the functionality to simulate a universe of particles, each inducing a force on the other. Containing different algorithms for the interactions of particles; a variety of numerical integration schemes; and a collection of different force types; the effect that each of these factors has on the performance can be investigated. 
 
 ## How to use this repository
