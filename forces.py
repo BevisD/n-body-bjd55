@@ -94,7 +94,7 @@ class InverseSquare(Force):
         calculate_potential()
             calculates the potential between two particles
     """
-    def __init__(self, K: float, softening: float) -> None:
+    def __init__(self, K: float, softening: float = 0.0) -> None:
         self.K = K
         self.SOFTENING = softening
 

@@ -166,7 +166,7 @@ class FMM(Algorithm):
             converts a multipole expansion at one level to a multipole
             expansion about the centres of the parent cells
         multi_to_local()
-            converts a multipole expansion at a well-seperated cell to a local
+            converts a multipole expansion at a well-separated cell to a local
             expansion about the centre of the current cell
         local_to_local()
             converts a local expansion about the centre of a cell to a local
@@ -276,7 +276,7 @@ class FMM(Algorithm):
 
     def multi_to_local(self, level: int) -> None:
         """
-        converts a multipole expansion at well_seperated cell to a local
+        converts a multipole expansion at well_separated cell to a local
         expansion at the centre of the current cell
 
         Arguments
@@ -299,8 +299,8 @@ class FMM(Algorithm):
                 index = Index(i, j, level)
                 local_expansion_coefficients = \
                     self.local_expansion_arrays[level][i, j]
-                well_seperated = index.well_seperated()
-                for interactor in well_seperated:
+                well_separated = index.well_separated()
+                for interactor in well_separated:
                     # b is the list of old expansion coefficients
                     b = multi_expansion_array[interactor.index]
                     # c is the list of the new expansion coefficients
@@ -523,7 +523,7 @@ class FMM(Algorithm):
         -------
             None
         """
-        # level 2 is the lowest level with well seperated cells
+        # level 2 is the lowest level with well separated cells
         for level in range(2, self.max_level):
             self.multi_to_local(level)
             self.local_to_local(level)

@@ -32,9 +32,9 @@ class Index:
         creates the index corresponding to the parent of the cell
     neighbours()
         creates the indices of the cell's direct neighbours (including diagonals)
-    well_seperated()
-        creates the indices that are well seperated from the cell
-        well seperated cells are the children of the cell's parent that are not
+    well_separated()
+        creates the indices that are well separated from the cell
+        well separated cells are the children of the cell's parent that are not
          the cell's direct neighbours
 
     Raises
@@ -124,26 +124,26 @@ class Index:
                 continue
         return neighbours
 
-    def well_seperated(self) -> set[Index]:
+    def well_separated(self) -> set[Index]:
         """
-        Returns the indices of the cells that are well seperated from the
-        current cell. Well seperated cells are the children of the parent of
+        Returns the indices of the cells that are well separated from the
+        current cell. Well separated cells are the children of the parent of
         the cell that are not direct neighbours
         
         Returns
         -------
-            well_seperated: set[Index]
-                the list of cells that are well-seperated from the current cell
+            well_separated: set[Index]
+                the list of cells that are well-separated from the current cell
         """
         if self.level <= 1:
             return set()
         parent_neighbours = self.parent().neighbours()
-        well_seperated = set()
+        well_separated = set()
         for parent_neighbour in parent_neighbours:
-            well_seperated.update(parent_neighbour.children())
+            well_separated.update(parent_neighbour.children())
 
-        well_seperated -= self.neighbours()
-        return well_seperated
+        well_separated -= self.neighbours()
+        return well_separated
 
     def __add__(self, other):
         """
